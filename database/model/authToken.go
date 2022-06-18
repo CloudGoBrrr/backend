@@ -13,6 +13,7 @@ type AuthToken struct {
 	UserID      uint
 	Token       string
 	Description string
+	Type        string `gorm:"default:token"` // migration
 }
 
 // CREATE
@@ -31,8 +32,30 @@ func CreateAuthToken(user User, description string) (string, error) {
 		}
 		db.Model(&AuthToken{}).Where("token = ?", token).Count(&count)
 	}
-	db.Create(&AuthToken{UserID: user.ID, Token: token, Description: description})
+	db.Create(&AuthToken{UserID: user.ID, Token: token, Description: description, Type: "token"})
 	return token, nil
+}
+
+func CreateBasicAuth(user User, description string) (string, error) {
+	db := database.GetDB()
+	passwd, err := helpers.GenerateRandomString(32)
+	if err != nil {
+		return "", err
+	}
+	var token string
+	token = user.Username + ":" + passwd
+	var count int64
+	db.Model(&AuthToken{}).Where("token = ?", token).Count(&count)
+	for count != 0 {
+		passwd, err = helpers.GenerateRandomString(32)
+		token = user.Username + ":" + passwd
+		if err != nil {
+			return "", err
+		}
+		db.Model(&AuthToken{}).Where("token = ?", token).Count(&count)
+	}
+	db.Create(&AuthToken{UserID: user.ID, Token: token, Description: description, Type: "basic"})
+	return passwd, nil
 }
 
 // DELETE
@@ -83,7 +106,21 @@ func GetUserFromAuthToken(token string) (User, AuthToken, error) {
 	db := database.GetDB()
 	// ToDo: SQL join for better performance?
 	var authToken AuthToken
-	db.Where("token = ?", token).First(&authToken)
+	db.Where("token = ? AND type = \"token\"", token).First(&authToken)
+	if authToken.ID == 0 {
+		return User{}, AuthToken{}, errors.New("token does not exist")
+	}
+	var user User
+	db.Where("id = ?", authToken.UserID).First(&user)
+	return user, authToken, nil
+}
+
+func GetUserFromBasicAuth(username string, password string) (User, AuthToken, error) {
+	db := database.GetDB()
+	// ToDo: SQL join for better performance?
+	token := username + ":" + password
+	var authToken AuthToken
+	db.Where("token = ? AND type = \"basic\"", token).First(&authToken)
 	if authToken.ID == 0 {
 		return User{}, AuthToken{}, errors.New("token does not exist")
 	}

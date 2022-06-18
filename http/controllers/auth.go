@@ -125,6 +125,32 @@ func HttpAuthChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+type bindingCreateBasicAuth struct {
+	Description string `json:"description" binding:"required"`
+}
+
+func HttpAuthCreateBasicAuth(c *gin.Context) {
+	var json bindingCreateBasicAuth
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		return
+	}
+
+	user, err := model.GetUserByID(c.MustGet("userID").(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		return
+	}
+
+	basicPassword, err := model.CreateBasicAuth(user, json.Description)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "username": user.Username, "password": basicPassword})
+}
+
 func HttpAuthListAuthTokens(c *gin.Context) {
 	tokens, err := model.GetAllAuthTokensOfUserID(c.MustGet("userID").(uint))
 	if err != nil {
