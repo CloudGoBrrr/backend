@@ -3,6 +3,7 @@ package http
 import (
 	"cloudgobrrr/backend/http/controllers"
 	"cloudgobrrr/backend/http/middleware"
+	"cloudgobrrr/backend/http/webdav"
 	"os"
 	"time"
 
@@ -12,8 +13,8 @@ import (
 )
 
 func newRouter(router *gin.Engine) {
+	router.MaxMultipartMemory = 8 << 20 // 8 MiB
 	router.Use(middleware.DefaultHeader)
-
 	router.Use(cors.New(cors.Config{
 		AllowAllOrigins:  true,
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
@@ -23,9 +24,16 @@ func newRouter(router *gin.Engine) {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	router.MaxMultipartMemory = 8 << 20
+	// Setup routes
 
-	v1 := router.Group("api/v1", middleware.ApiHeader)
+	if os.Getenv("WEBDAV_ENABLED") == "true" {
+		// WebDAV Support in /remote/webdav
+		router.Use(webdav.Handle())
+	}
+
+	api := router.Group("api", middleware.ApiHeader)
+
+	v1 := api.Group("v1")
 	{
 		v1.GET("healthcheck", controllers.HttpHealthcheck)
 		v1.GET("featureFlags", controllers.HttpFeatureFlag)
@@ -38,6 +46,7 @@ func newRouter(router *gin.Engine) {
 			v1Auth.POST("changepassword", middleware.Authenticate, controllers.HttpAuthChangePassword)
 			v1AuthToken := v1Auth.Group("/token")
 			{
+				v1AuthToken.POST("basic", middleware.Authenticate, controllers.HttpAuthCreateBasicAuth)
 				v1AuthToken.DELETE("", middleware.Authenticate, controllers.HttpAuthDeleteAuthTokenWithID)
 				v1AuthToken.GET("list", middleware.Authenticate, controllers.HttpAuthListAuthTokens)
 			}
@@ -64,5 +73,3 @@ func newRouter(router *gin.Engine) {
 		})
 	}
 }
-
-// ToDo: webdav support

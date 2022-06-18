@@ -22,6 +22,7 @@ func BuildEnv() {
 	defaultEnv("SERVE_PUBLIC", "true")
 	defaultEnv("PUBLIC_PATH", "./frontend/build")
 	defaultEnv("PUBLIC_REGISTRATION", "false")
+	defaultEnv("WEBDAV_ENABLED", "false")
 }
 
 func defaultEnv(EnvKey string, DefaultValue string) {
