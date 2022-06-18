@@ -8,6 +8,7 @@ require (
 	github.com/gin-gonic/contrib v0.0.0-20201101042839-6a891bf89f19
 	github.com/gin-gonic/gin v1.7.7
 	golang.org/x/crypto v0.0.0-20201002170205-7f63de1d35b0
+	golang.org/x/net v0.0.0-20190404232315-eb5bcb51f2a3
 	gorm.io/driver/mysql v1.3.3
 	gorm.io/gorm v1.23.5
 )
