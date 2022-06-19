@@ -24,8 +24,6 @@ func Handle() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, web.Prefix) {
 			if !middleware.ValidateBasic(c) {
-				c.Writer.Header().Set("WWW-Authenticate", "Basic realm=\"User Visible Realm\", charset=\"UTF-8\"")
-				c.AbortWithStatus(401)
 				return
 			}
 

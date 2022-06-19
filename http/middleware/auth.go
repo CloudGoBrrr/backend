@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"cloudgobrrr/backend/database/model"
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,8 +33,6 @@ func AuthenticateToken(c *gin.Context) {
 
 func AuthenticateBasic(c *gin.Context) {
 	if !ValidateBasic(c) {
-		c.Writer.Header().Set("WWW-Authenticate", "Basic realm=\"User Visible Realm\", charset=\"UTF-8\"")
-		c.AbortWithStatus(401)
 		return
 	}
 
@@ -45,12 +42,14 @@ func AuthenticateBasic(c *gin.Context) {
 func ValidateBasic(c *gin.Context) bool {
 	username, password, hasAuth := c.Request.BasicAuth()
 	if !hasAuth {
+		c.Writer.Header().Set("WWW-Authenticate", "Basic realm=\"User Visible Realm\", charset=\"UTF-8\"")
+		c.AbortWithStatus(401)
 		return false
 	}
 
 	user, _, err := model.GetUserFromBasicAuth(username, password)
 	if err != nil {
-		fmt.Println(err)
+		c.AbortWithStatus(401)
 		return false
 	}
 
