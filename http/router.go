@@ -25,13 +25,12 @@ func newRouter(router *gin.Engine) {
 	}))
 
 	// Setup routes
+	api := router.Group("api", middleware.ApiHeader)
 
 	if os.Getenv("WEBDAV_ENABLED") == "true" {
-		// WebDAV Support in /remote/webdav
+		// WebDAV Support in /api/webdav
 		router.Use(webdav.Handle())
 	}
-
-	api := router.Group("api", middleware.ApiHeader)
 
 	v1 := api.Group("v1")
 	{
@@ -40,29 +39,29 @@ func newRouter(router *gin.Engine) {
 
 		v1Auth := v1.Group("auth")
 		{
-			v1Auth.GET("check", middleware.Authenticate, controllers.HttpAuthCheck)
+			v1Auth.GET("check", middleware.AuthenticateToken, controllers.HttpAuthCheck)
 			v1Auth.POST("signin", controllers.HttpAuthSignin)
 			v1Auth.POST("signup", controllers.HttpAuthSignup)
-			v1Auth.POST("changepassword", middleware.Authenticate, controllers.HttpAuthChangePassword)
+			v1Auth.POST("changepassword", middleware.AuthenticateToken, controllers.HttpAuthChangePassword)
 			v1AuthToken := v1Auth.Group("/token")
 			{
-				v1AuthToken.POST("basic", middleware.Authenticate, controllers.HttpAuthCreateBasicAuth)
-				v1AuthToken.DELETE("", middleware.Authenticate, controllers.HttpAuthDeleteAuthTokenWithID)
-				v1AuthToken.GET("list", middleware.Authenticate, controllers.HttpAuthListAuthTokens)
+				v1AuthToken.POST("basic", middleware.AuthenticateToken, controllers.HttpAuthCreateBasicAuth)
+				v1AuthToken.DELETE("", middleware.AuthenticateToken, controllers.HttpAuthDeleteAuthTokenWithID)
+				v1AuthToken.GET("list", middleware.AuthenticateToken, controllers.HttpAuthListAuthTokens)
 			}
 
 		}
 
 		v1Files := v1.Group("files")
 		{
-			v1Files.DELETE("", middleware.Authenticate, controllers.HttpFileDelete)
-			v1Files.PUT("upload", middleware.Authenticate, controllers.HttpFileUpload)
-			v1Files.POST("upload", middleware.Authenticate, controllers.HttpFileUploadFinish)
+			v1Files.DELETE("", middleware.AuthenticateToken, controllers.HttpFileDelete)
+			v1Files.PUT("upload", middleware.AuthenticateToken, controllers.HttpFileUpload)
+			v1Files.POST("upload", middleware.AuthenticateToken, controllers.HttpFileUploadFinish)
 			v1Files.GET("download", controllers.HttpFileDownloadWithSecret)
-			v1Files.POST("download", middleware.Authenticate, controllers.HttpFileDownloadCreateSecret)
+			v1Files.POST("download", middleware.AuthenticateToken, controllers.HttpFileDownloadCreateSecret)
 
-			v1Files.GET("list", middleware.Authenticate, controllers.HttpFilesList)
-			v1Files.POST("folder", middleware.Authenticate, controllers.HttpFolderCreate)
+			v1Files.GET("list", middleware.AuthenticateToken, controllers.HttpFilesList)
+			v1Files.POST("folder", middleware.AuthenticateToken, controllers.HttpFolderCreate)
 		}
 	}
 
