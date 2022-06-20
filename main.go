@@ -5,6 +5,7 @@ import (
 	"cloudgobrrr/backend/database/model"
 	"cloudgobrrr/backend/http"
 	"cloudgobrrr/backend/pkg/env"
+	"cloudgobrrr/backend/pkg/migrator"
 	"fmt"
 	"log"
 	"math/rand"
@@ -46,6 +47,9 @@ func main() {
 	if err != nil {
 		MainLogger.Fatal(err)
 	}
+
+	// Run Migrations
+	migrator.RunMigrations()
 
 	// Init DB
 	initDb(db)
