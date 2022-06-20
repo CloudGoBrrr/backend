@@ -16,7 +16,7 @@ func Handle() gin.HandlerFunc {
 
 	web := dav.Handler{
 		Prefix:     "/api/webdav",
-		FileSystem: dav.Dir(os.Getenv(("DATA_DIRECTORY"))),
+		FileSystem: dav.Dir(os.Getenv(("USER_DIRECTORY"))),
 		LockSystem: dav.NewMemLS(),
 		Logger:     logger,
 	}

@@ -26,6 +26,10 @@ func main() {
 	if err != nil {
 		MainLogger.Fatal(err)
 	}
+	err = os.MkdirAll(os.Getenv("USER_DIRECTORY"), 0755)
+	if err != nil {
+		MainLogger.Fatal(err)
+	}
 	err = os.MkdirAll(os.Getenv("TEMP_DIRECTORY"), 0755)
 	if err != nil {
 		MainLogger.Fatal(err)

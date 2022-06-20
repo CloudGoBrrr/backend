@@ -24,14 +24,14 @@ func CreateUser(username string, email string, plainTextPassword string) error {
 	db.Model(&User{}).Where("username = ?", username).Count(&count)
 	if count == 0 {
 		// create user in directory
-		err := os.Mkdir(os.Getenv("DATA_DIRECTORY")+"/"+username, 0755)
+		err := os.Mkdir(os.Getenv("USER_DIRECTORY")+"/"+username, 0755)
 		if err != nil {
 			return err
 		}
 		// ---
 
 		// add sample files (needs a better solution)
-		file, err := os.Create(os.Getenv("DATA_DIRECTORY") + "/" + username + "/README.txt")
+		file, err := os.Create(os.Getenv("USER_DIRECTORY") + "/" + username + "/README.txt")
 		if err != nil {
 			return err
 		}
@@ -40,11 +40,11 @@ func CreateUser(username string, email string, plainTextPassword string) error {
 			return err
 		}
 		file.Close()
-		err = os.Mkdir(os.Getenv("DATA_DIRECTORY")+"/"+username+"/test_folder", 0755)
+		err = os.Mkdir(os.Getenv("USER_DIRECTORY")+"/"+username+"/test_folder", 0755)
 		if err != nil {
 			return err
 		}
-		file, err = os.Create(os.Getenv("DATA_DIRECTORY") + "/" + username + "/test_folder" + "/README.txt")
+		file, err = os.Create(os.Getenv("USER_DIRECTORY") + "/" + username + "/test_folder" + "/README.txt")
 		if err != nil {
 			return err
 		}
@@ -53,7 +53,7 @@ func CreateUser(username string, email string, plainTextPassword string) error {
 			return err
 		}
 		file.Close()
-		err = os.Mkdir(os.Getenv("DATA_DIRECTORY")+"/"+username+"/empty_folder", 0755)
+		err = os.Mkdir(os.Getenv("USER_DIRECTORY")+"/"+username+"/empty_folder", 0755)
 		if err != nil {
 			return err
 		}

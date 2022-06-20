@@ -52,8 +52,8 @@ func ListFiles(path string) ([]structs.File, error) {
 }
 
 func GetAndCheckPath(username string, path string) (string, error) {
-	dirPath := filepath.Join(os.Getenv("DATA_DIRECTORY"), username, path)
-	userPath := filepath.Join(os.Getenv("DATA_DIRECTORY"), username)
+	dirPath := filepath.Join(os.Getenv("USER_DIRECTORY"), username, path)
+	userPath := filepath.Join(os.Getenv("USER_DIRECTORY"), username)
 
 	if !strings.HasPrefix(dirPath, userPath) {
 		return "", errors.New("invalid path")
