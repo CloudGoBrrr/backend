@@ -10,18 +10,21 @@ import (
 	"math/rand"
 	"os"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 var MainLogger = log.New(os.Stdout, "[APP] ", log.Ldate|log.Ltime)
 
 func main() {
 	var err error
-	// ---
+
+	// --
 	// Pre boot
-	// ---
+	// --
 	rand.Seed(time.Now().Unix())
 	env.BuildEnv()
-	// Creating needed folders
+	// Creating necessary folders
 	err = os.MkdirAll(os.Getenv("DATA_DIRECTORY"), 0755)
 	if err != nil {
 		MainLogger.Fatal(err)
@@ -35,32 +38,31 @@ func main() {
 		MainLogger.Fatal(err)
 	}
 
-	// ---
-	// DB Boot
-	// ---
-	mainDbBoot()
-
-	// ---
-	// HTTP Boot
-	// ---
-	http.NewHttpServer()
-
-	// ---
-	// Gracefull shutdown
-	// ---
-	database.GetSQLDB().Close()
-	MainLogger.Println("Server stopped gracefully")
-}
-
-func mainDbBoot() {
-	// Connecting to DB
+	// --
+	// Boot
+	// --
+	// DB Connect
 	db, err := database.InitDB()
 	if err != nil {
 		MainLogger.Fatal(err)
 	}
 
+	// Init DB
+	initDb(db)
+
+	// HTTP Boot
+	http.NewHttpServer()
+
+	// --
+	// Shutdown
+	// --
+	database.GetSQLDB().Close()
+	MainLogger.Println("Server stopped gracefully")
+}
+
+func initDb(db *gorm.DB) {
 	// Run Migrations
-	err = db.AutoMigrate(&model.User{}, &model.DownloadSecret{}, &model.AuthToken{})
+	err := db.AutoMigrate(&model.User{}, &model.DownloadSecret{}, &model.AuthToken{})
 	if err != nil {
 		MainLogger.Fatal(err)
 	}
