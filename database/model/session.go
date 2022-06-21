@@ -114,9 +114,23 @@ func SessionGetUserBasic(username string, password string) (User, Session, error
 	var session Session
 	db.Where(whereBasic, token).First(&session)
 	if session.ID == 0 {
-		return User{}, Session{}, errors.New("token does not exist")
+		return User{}, Session{}, errors.New("session does not exist")
 	}
 	var user User
 	db.Where("id = ?", session.UserID).First(&user)
 	return user, session, nil
+}
+
+// CHANGE
+func SessionChangeDescription(sessionID uint, newDescription string) (string, error) {
+	db := database.GetDB()
+	var session Session
+	db.Where("id = ?", sessionID).First(&session)
+	if session.ID == 0 {
+		return "", errors.New("session does not exists")
+	}
+	oldDescription := session.Description
+	session.Description = newDescription
+	db.Save(&session)
+	return oldDescription, nil
 }
