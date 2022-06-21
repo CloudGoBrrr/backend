@@ -33,7 +33,7 @@ func HttpFileDownloadCreateSecret(c *gin.Context) {
 		return
 	}
 
-	secret, err := model.CreateDownloadSecret(c.MustGet("userID").(uint), path, json.Name)
+	secret, err := model.DownloadSecretCreate(c.MustGet("userID").(uint), path, json.Name)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
 		return
@@ -53,7 +53,7 @@ func HttpFileDownloadWithSecret(c *gin.Context) {
 		return
 	}
 
-	downloadSecret, err := model.GetDownloadSecretFromSecret(query.Secret)
+	downloadSecret, err := model.DownloadSecretGetBySecret(query.Secret)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
 		return

@@ -17,7 +17,7 @@ type User struct {
 }
 
 // CREATE
-func CreateUser(username string, email string, plainTextPassword string) error {
+func UserCreate(username string, email string, plainTextPassword string) error {
 	db := database.GetDB()
 	// check if user exists
 	var count int64
@@ -73,7 +73,7 @@ func CreateUser(username string, email string, plainTextPassword string) error {
 // ToDo: add quota
 // ToDo: add template system for createuser
 
-func ChangePassword(userID uint, plainTextPassword string) error {
+func UserChangePassword(userID uint, plainTextPassword string) error {
 	db := database.GetDB()
 	var user User
 	db.Where("id = ?", userID).First(&user)
@@ -89,7 +89,7 @@ func ChangePassword(userID uint, plainTextPassword string) error {
 	return nil
 }
 
-func GetUserByUsername(username string) (User, error) {
+func UserGetByUsername(username string) (User, error) {
 	db := database.GetDB()
 	var user User
 	db.Where("username = ?", username).First(&user)
@@ -99,7 +99,7 @@ func GetUserByUsername(username string) (User, error) {
 	return user, nil
 }
 
-func GetUserByID(userID uint) (User, error) {
+func UserGetByID(userID uint) (User, error) {
 	db := database.GetDB()
 	var user User
 	db.Where("id = ?", userID).First(&user)

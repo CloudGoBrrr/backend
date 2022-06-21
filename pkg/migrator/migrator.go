@@ -36,7 +36,7 @@ func RunMigrations() {
 	db.Model(&model.User{}).Count(&count)
 	if count == 0 {
 		fmt.Println("No users found, creating admin user")
-		err := model.CreateUser("admin", "admin@example.com", "admin")
+		err := model.UserCreate("admin", "admin@example.com", "admin")
 		if err != nil {
 			panic(err)
 		}

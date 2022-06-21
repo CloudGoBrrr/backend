@@ -16,7 +16,7 @@ type DownloadSecret struct {
 }
 
 // CREATE
-func CreateDownloadSecret(userID uint, path string, filename string) (string, error) {
+func DownloadSecretCreate(userID uint, path string, filename string) (string, error) {
 	db := database.GetDB()
 	// create secret
 	secret, err := helpers.GenerateRandomString(16)
@@ -37,7 +37,7 @@ func CreateDownloadSecret(userID uint, path string, filename string) (string, er
 	return secret, nil
 }
 
-func GetDownloadSecretFromSecret(secret string) (*DownloadSecret, error) {
+func DownloadSecretGetBySecret(secret string) (*DownloadSecret, error) {
 	db := database.GetDB()
 	var downloadSecret DownloadSecret
 	if err := db.Where("secret = ?", secret).First(&downloadSecret).Error; err != nil {

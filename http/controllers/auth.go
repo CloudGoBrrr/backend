@@ -24,7 +24,7 @@ func HttpAuthSignin(c *gin.Context) {
 		return
 	}
 
-	user, err := model.GetUserByUsername(json.Username)
+	user, err := model.UserGetByUsername(json.Username)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		c.Abort()
@@ -77,7 +77,7 @@ func HttpAuthSignup(c *gin.Context) {
 		return
 	}
 
-	err := model.CreateUser(json.Username, json.Email, json.Password)
+	err := model.UserCreate(json.Username, json.Email, json.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
@@ -99,7 +99,7 @@ func HttpAuthChangePassword(c *gin.Context) {
 		return
 	}
 
-	user, err := model.GetUserByID(c.MustGet("userID").(uint))
+	user, err := model.UserGetByID(c.MustGet("userID").(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
@@ -110,7 +110,7 @@ func HttpAuthChangePassword(c *gin.Context) {
 		return
 	}
 
-	err = model.ChangePassword(user.ID, json.NewPassword)
+	err = model.UserChangePassword(user.ID, json.NewPassword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
@@ -136,7 +136,7 @@ func HttpAuthCreateBasicAuth(c *gin.Context) {
 		return
 	}
 
-	user, err := model.GetUserByID(c.MustGet("userID").(uint))
+	user, err := model.UserGetByID(c.MustGet("userID").(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
