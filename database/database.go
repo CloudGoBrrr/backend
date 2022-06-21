@@ -12,7 +12,7 @@ var DB *gorm.DB
 
 var SQLDB *sql.DB
 
-func InitDB() (*gorm.DB, error) {
+func InitDB() error {
 	var err error
 
 	if SQLDB != nil {
@@ -21,15 +21,15 @@ func InitDB() (*gorm.DB, error) {
 
 	DB, err = NewDB()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	SQLDB, err = DB.DB()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return DB, nil
+	return nil
 }
 
 func GetDB() *gorm.DB {
