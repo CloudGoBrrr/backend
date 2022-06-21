@@ -43,11 +43,11 @@ func newRouter(router *gin.Engine) {
 			v1Auth.POST("signin", controllers.HttpAuthSignin)
 			v1Auth.POST("signup", controllers.HttpAuthSignup)
 			v1Auth.POST("changepassword", middleware.AuthenticateToken, controllers.HttpAuthChangePassword)
-			v1AuthToken := v1Auth.Group("/token")
+			v1AuthSession := v1Auth.Group("/session")
 			{
-				v1AuthToken.POST("basic", middleware.AuthenticateToken, controllers.HttpAuthCreateBasicAuth)
-				v1AuthToken.DELETE("", middleware.AuthenticateToken, controllers.HttpAuthDeleteAuthTokenWithID)
-				v1AuthToken.GET("list", middleware.AuthenticateToken, controllers.HttpAuthListAuthTokens)
+				v1AuthSession.POST("basic", middleware.AuthenticateToken, controllers.HttpAuthCreateBasicAuth)
+				v1AuthSession.DELETE("", middleware.AuthenticateToken, controllers.HttpAuthDeleteSessionWithID)
+				v1AuthSession.GET("list", middleware.AuthenticateToken, controllers.HttpAuthListSessions)
 			}
 
 		}

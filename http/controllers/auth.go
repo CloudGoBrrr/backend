@@ -151,7 +151,7 @@ func HttpAuthCreateBasicAuth(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "username": user.Username, "password": basicPassword})
 }
 
-func HttpAuthListAuthTokens(c *gin.Context) {
+func HttpAuthListSessions(c *gin.Context) {
 	tokens, err := model.SessionGetAll(c.MustGet("userID").(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
@@ -165,7 +165,7 @@ type bindingDeleteAuthToken struct {
 	ID uint `form:"id" binding:"required"`
 }
 
-func HttpAuthDeleteAuthTokenWithID(c *gin.Context) {
+func HttpAuthDeleteSessionWithID(c *gin.Context) {
 	var query bindingDeleteAuthToken
 	if err := c.ShouldBindQuery(&query); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
@@ -184,10 +184,10 @@ func HttpAuthCheck(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{
 		"status": "ok",
 		"userDetails": gin.H{
-			"id":       c.MustGet("userID").(uint),
-			"username": c.MustGet("userName").(string),
-			"email":    c.MustGet("userEmail").(string),
-			"tokenID":  c.MustGet("tokenID").(uint),
+			"id":        c.MustGet("userID").(uint),
+			"username":  c.MustGet("userName").(string),
+			"email":     c.MustGet("userEmail").(string),
+			"sessionId": c.MustGet("sessionId").(uint),
 		},
 	})
 }
