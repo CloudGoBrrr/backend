@@ -125,6 +125,27 @@ func HttpAuthChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
+type bindingSessionChangeDescription struct {
+	Id             uint   `json:"sessionId" binding:"required"`
+	NewDescription string `json:"newDescription" binding:"required"`
+}
+
+func HttpAuthSessionChangeDescription(c *gin.Context) {
+	var json bindingSessionChangeDescription
+	if err := c.ShouldBindJSON(&json); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		return
+	}
+
+	oldDescription, err := model.SessionChangeDescription(json.Id, json.NewDescription)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "oldDescription": oldDescription})
+}
+
 type bindingCreateBasicAuth struct {
 	Description string `json:"description" binding:"required"`
 }

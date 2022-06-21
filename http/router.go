@@ -45,9 +45,10 @@ func newRouter(router *gin.Engine) {
 			v1Auth.POST("changepassword", middleware.AuthenticateToken, controllers.HttpAuthChangePassword)
 			v1AuthSession := v1Auth.Group("/session")
 			{
-				v1AuthSession.POST("basic", middleware.AuthenticateToken, controllers.HttpAuthCreateBasicAuth)
-				v1AuthSession.DELETE("", middleware.AuthenticateToken, controllers.HttpAuthDeleteSessionWithID)
 				v1AuthSession.GET("list", middleware.AuthenticateToken, controllers.HttpAuthListSessions)
+				v1AuthSession.DELETE("", middleware.AuthenticateToken, controllers.HttpAuthDeleteSessionWithID)
+				v1AuthSession.POST("basic", middleware.AuthenticateToken, controllers.HttpAuthCreateBasicAuth)
+				v1AuthSession.PUT("description", middleware.AuthenticateToken, controllers.HttpAuthSessionChangeDescription)
 			}
 
 		}
