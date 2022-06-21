@@ -152,13 +152,13 @@ func HttpAuthCreateBasicAuth(c *gin.Context) {
 }
 
 func HttpAuthListSessions(c *gin.Context) {
-	tokens, err := model.SessionGetAll(c.MustGet("userID").(uint))
+	sessions, err := model.SessionGetAll(c.MustGet("userID").(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "tokens": tokens})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "sessions": sessions})
 }
 
 type bindingDeleteAuthToken struct {
