@@ -41,7 +41,7 @@ func HttpAuthSignin(c *gin.Context) {
 		return
 	}
 
-	token, err := model.CreateAuthToken(user, json.Description)
+	token, err := model.SessionCreateToken(user, json.Description)
 	if err != nil {
 		fmt.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
@@ -116,7 +116,7 @@ func HttpAuthChangePassword(c *gin.Context) {
 		return
 	}
 
-	err = model.DeleteAllAuthTokensOfUser(user.ID)
+	err = model.SessionDeleteAll(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
@@ -142,7 +142,7 @@ func HttpAuthCreateBasicAuth(c *gin.Context) {
 		return
 	}
 
-	basicPassword, err := model.CreateBasicAuth(user, json.Description)
+	basicPassword, err := model.SessionCreateBasic(user, json.Description)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
@@ -152,7 +152,7 @@ func HttpAuthCreateBasicAuth(c *gin.Context) {
 }
 
 func HttpAuthListAuthTokens(c *gin.Context) {
-	tokens, err := model.GetAllAuthTokensOfUserID(c.MustGet("userID").(uint))
+	tokens, err := model.SessionGetAll(c.MustGet("userID").(uint))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
@@ -172,7 +172,7 @@ func HttpAuthDeleteAuthTokenWithID(c *gin.Context) {
 		return
 	}
 
-	if err := model.DeleteAuthTokenWithID(query.ID, c.MustGet("userID").(uint)); err != nil {
+	if err := model.SessionDeleteWithID(query.ID, c.MustGet("userID").(uint)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
 	}

@@ -16,7 +16,7 @@ func AuthenticateToken(c *gin.Context) {
 		return
 	}
 
-	user, authToken, err := model.GetUserFromAuthToken(header)
+	user, authToken, err := model.SessionGetUserToken(header)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
 		c.Abort()
@@ -47,7 +47,7 @@ func ValidateBasic(c *gin.Context) bool {
 		return false
 	}
 
-	user, _, err := model.GetUserFromBasicAuth(username, password)
+	user, _, err := model.SessionGetUserBasic(username, password)
 	if err != nil {
 		c.AbortWithStatus(401)
 		return false

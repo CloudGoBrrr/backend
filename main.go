@@ -66,7 +66,7 @@ func main() {
 
 func initDb(db *gorm.DB) {
 	// Run Migrations
-	err := db.AutoMigrate(&model.User{}, &model.DownloadSecret{}, &model.AuthToken{})
+	err := db.AutoMigrate(&model.User{}, &model.DownloadSecret{}, &model.Session{})
 	if err != nil {
 		MainLogger.Fatal(err)
 	}
