@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func GetContentRange(header string) (int, int, int, error) {
+func HttpGetContentRange(header string) (int, int, int, error) {
 	tmp := strings.Split(header, " ")
 	if len(tmp) != 2 {
 		return 0, 0, 0, fmt.Errorf("invalid content-range header")

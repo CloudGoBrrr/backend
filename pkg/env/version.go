@@ -2,6 +2,6 @@ package env
 
 var version = "not set"
 
-func GetVersion() string {
+func VersionGet() string {
 	return version
 }

@@ -10,8 +10,8 @@ package helpers
 import (
 	"crypto/rand"
 	"encoding/base64"
-	"fmt"
 	"io"
+	"log"
 	"math/big"
 )
 
@@ -26,7 +26,7 @@ func assertAvailablePRNG() {
 
 	_, err := io.ReadFull(rand.Reader, buf)
 	if err != nil {
-		panic(fmt.Sprintf("crypto/rand is unavailable: Read() failed with %#v", err))
+		log.Fatalf("crypto/rand is unavailable: Read() failed with %#v", err)
 	}
 }
 

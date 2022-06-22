@@ -1,7 +1,7 @@
 package http
 
 import (
-	"fmt"
+	"log"
 	"os"
 	"strings"
 
@@ -26,13 +26,13 @@ func NewHttpServer() {
 		err = router.SetTrustedProxies(strings.Split(os.Getenv("TRUSTED_PROXIES"), " "))
 	}
 	if err != nil {
-		panic(err)
+		log.Fatalf("failed to set trusted proxies: %v", err)
 	}
 
 	newRouter(router)
 
 	err = endless.ListenAndServe(":"+os.Getenv("HTTP_PORT"), router)
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Println(err.Error())
 	}
 }

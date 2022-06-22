@@ -35,34 +35,41 @@ func newRouter(router *gin.Engine) {
 	v1 := api.Group("v1")
 	{
 		v1.GET("healthcheck", controllers.HttpHealthcheck)
-		v1.GET("featureFlags", controllers.HttpFeatureFlag)
+		v1.GET("featureFlags", controllers.HttpFeatureFlagGet)
 
 		v1Auth := v1.Group("auth")
 		{
-			v1Auth.GET("check", middleware.AuthenticateToken, controllers.HttpAuthCheck)
+			v1Auth.GET("details", middleware.AuthenticateToken, controllers.HttpAuthDetails)
 			v1Auth.POST("signin", controllers.HttpAuthSignin)
 			v1Auth.POST("signup", controllers.HttpAuthSignup)
 			v1Auth.POST("changepassword", middleware.AuthenticateToken, controllers.HttpAuthChangePassword)
-			v1AuthSession := v1Auth.Group("/session")
+			v1AuthSession := v1Auth.Group("session")
 			{
-				v1AuthSession.GET("list", middleware.AuthenticateToken, controllers.HttpAuthListSessions)
-				v1AuthSession.DELETE("", middleware.AuthenticateToken, controllers.HttpAuthDeleteSessionWithID)
-				v1AuthSession.POST("basic", middleware.AuthenticateToken, controllers.HttpAuthCreateBasicAuth)
-				v1AuthSession.PUT("description", middleware.AuthenticateToken, controllers.HttpAuthSessionChangeDescription)
+				v1AuthSession.POST("basic", middleware.AuthenticateToken, controllers.HttpSessionCreateBasicAuth)
+				v1AuthSession.GET("list", middleware.AuthenticateToken, controllers.HttpSessionList)
+				v1AuthSession.PUT("description", middleware.AuthenticateToken, controllers.HttpSessionChangeDescription)
+				v1AuthSession.DELETE("", middleware.AuthenticateToken, controllers.HttpSessionDeleteWithID)
 			}
 
 		}
 
+		v1File := v1.Group("file")
+		{
+			v1File.PUT("upload", middleware.AuthenticateToken, controllers.HttpFileChunkedUpload)
+			v1File.POST("upload", middleware.AuthenticateToken, controllers.HttpFileChunkedUploadFinish)
+			v1File.GET("download", controllers.HttpFileDownloadWithSecret)
+			v1File.POST("download", middleware.AuthenticateToken, controllers.HttpFileDownloadCreateSecret)
+			v1File.DELETE("", middleware.AuthenticateToken, controllers.HttpFileDelete)
+		}
+
+		v1Folder := v1.Group("folder")
+		{
+			v1Folder.POST("", middleware.AuthenticateToken, controllers.HttpFolderCreate)
+		}
+
 		v1Files := v1.Group("files")
 		{
-			v1Files.DELETE("", middleware.AuthenticateToken, controllers.HttpFileDelete)
-			v1Files.PUT("upload", middleware.AuthenticateToken, controllers.HttpFileUpload)
-			v1Files.POST("upload", middleware.AuthenticateToken, controllers.HttpFileUploadFinish)
-			v1Files.GET("download", controllers.HttpFileDownloadWithSecret)
-			v1Files.POST("download", middleware.AuthenticateToken, controllers.HttpFileDownloadCreateSecret)
-
-			v1Files.GET("list", middleware.AuthenticateToken, controllers.HttpFilesList)
-			v1Files.POST("folder", middleware.AuthenticateToken, controllers.HttpFolderCreate)
+			v1Files.GET("", middleware.AuthenticateToken, controllers.HttpFilesList)
 		}
 	}
 

@@ -8,6 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HttpFeatureFlag(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{"status": "ok", "version": env.GetVersion(), "featureFlags": gin.H{"PUBLIC_REGISTRATION": os.Getenv("PUBLIC_REGISTRATION"), "WEBDAV_ENABLED": os.Getenv("WEBDAV_ENABLED")}})
+func HttpFeatureFlagGet(c *gin.Context) {
+	c.IndentedJSON(http.StatusOK, gin.H{"status": "ok", "version": env.VersionGet(), "featureFlags": gin.H{"PUBLIC_REGISTRATION": os.Getenv("PUBLIC_REGISTRATION"), "WEBDAV_ENABLED": os.Getenv("WEBDAV_ENABLED")}})
 }

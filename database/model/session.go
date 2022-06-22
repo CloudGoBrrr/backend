@@ -3,7 +3,7 @@ package model
 import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/pkg/helpers"
-	"errors"
+	"fmt"
 
 	"gorm.io/gorm"
 )
@@ -77,13 +77,13 @@ func SessionDeleteWithID(sessionID uint, userID uint) error {
 	var session Session
 	db.Where("id = ?", sessionID).First(&session)
 	if session.ID == 0 {
-		return errors.New("session does not exist")
+		return fmt.Errorf("session does not exist")
 	}
 	if session.UserID == userID {
 		db.Delete(&session)
 		return nil
 	}
-	return errors.New("token does not belong to user")
+	return fmt.Errorf("token does not belong to user")
 }
 
 // GET
@@ -100,7 +100,7 @@ func SessionGetUserToken(token string) (User, Session, error) {
 	var session Session
 	db.Where(whereToken, token).First(&session)
 	if session.ID == 0 {
-		return User{}, Session{}, errors.New("token does not exist")
+		return User{}, Session{}, fmt.Errorf("token does not exist")
 	}
 	var user User
 	db.Where("id = ?", session.UserID).First(&user)
@@ -114,7 +114,7 @@ func SessionGetUserBasic(username string, password string) (User, Session, error
 	var session Session
 	db.Where(whereBasic, token).First(&session)
 	if session.ID == 0 {
-		return User{}, Session{}, errors.New("session does not exist")
+		return User{}, Session{}, fmt.Errorf("session does not exist")
 	}
 	var user User
 	db.Where("id = ?", session.UserID).First(&user)
@@ -127,7 +127,7 @@ func SessionChangeDescription(sessionID uint, newDescription string) (string, er
 	var session Session
 	db.Where("id = ?", sessionID).First(&session)
 	if session.ID == 0 {
-		return "", errors.New("session does not exists")
+		return "", fmt.Errorf("session does not exists")
 	}
 	oldDescription := session.Description
 	session.Description = newDescription

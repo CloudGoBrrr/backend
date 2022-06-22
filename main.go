@@ -11,8 +11,6 @@ import (
 	"time"
 )
 
-var MainLogger = log.New(os.Stdout, "[APP] ", log.Ldate|log.Ltime)
-
 func main() {
 	var err error
 
@@ -20,19 +18,19 @@ func main() {
 	// Pre boot
 	// --
 	rand.Seed(time.Now().Unix())
-	env.BuildEnv()
+	env.EnvBuild()
 	// Creating necessary folders
 	err = os.MkdirAll(os.Getenv("DATA_DIRECTORY"), 0755)
 	if err != nil {
-		MainLogger.Fatal(err)
+		log.Fatalf("Failed to create data directory: %s", err)
 	}
 	err = os.MkdirAll(os.Getenv("USER_DIRECTORY"), 0755)
 	if err != nil {
-		MainLogger.Fatal(err)
+		log.Fatalf("Failed to create user directory: %s", err)
 	}
 	err = os.MkdirAll(os.Getenv("TEMP_DIRECTORY"), 0755)
 	if err != nil {
-		MainLogger.Fatal(err)
+		log.Fatalf("Failed to create temp directory: %s", err)
 	}
 
 	// --
@@ -41,7 +39,7 @@ func main() {
 	// DB Connect
 	err = database.InitDB()
 	if err != nil {
-		MainLogger.Fatal(err)
+		log.Fatalf("Failed to connect to database: %s", err)
 	}
 
 	// Run Migrations
@@ -54,5 +52,5 @@ func main() {
 	// Shutdown
 	// --
 	database.GetSQLDB().Close()
-	MainLogger.Println("Server stopped gracefully")
+	log.Println("Server stopped gracefully")
 }

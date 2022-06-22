@@ -12,23 +12,21 @@ import (
 	"strings"
 )
 
-var FilesHelperLogger = log.New(os.Stdout, "[FILES-HELPER] ", log.Ldate|log.Ltime)
-
 func FileExists(path string) bool {
 	_, err := os.Stat(path)
 	return !errors.Is(err, os.ErrNotExist)
 }
 
-func ListFiles(path string) ([]structs.File, error) {
+func FilesList(path string) ([]structs.File, error) {
 	fileReader, err := os.Open(path)
 	if err != nil {
-		FilesHelperLogger.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 	defer fileReader.Close()
 	fileList, err := fileReader.Readdir(0)
 	if err != nil {
-		FilesHelperLogger.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -56,13 +54,13 @@ func GetAndCheckPath(username string, path string) (string, error) {
 	userPath := filepath.Join(os.Getenv("USER_DIRECTORY"), username)
 
 	if !strings.HasPrefix(dirPath, userPath) {
-		return "", errors.New("invalid path")
+		return "", fmt.Errorf("invalid path")
 	}
 
 	return dirPath, nil
 }
 
-func ChunkUploadTmpMetaFile(rangeStart int, rangeEnd int, tempDir string, fileName string) error {
+func ChunkedUploadMetaFile(rangeStart int, rangeEnd int, tempDir string, fileName string) error {
 	filePath := filepath.Join(tempDir, fileName)
 	if rangeStart == 0 {
 		os.Remove(filePath)
@@ -87,7 +85,7 @@ func ChunkUploadTmpMetaFile(rangeStart int, rangeEnd int, tempDir string, fileNa
 			return err
 		}
 		if rangeStart != fileSize+1 {
-			return errors.New("invalid range")
+			return fmt.Errorf("invalid range")
 		}
 
 		// set new content range in meta file

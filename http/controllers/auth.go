@@ -4,21 +4,21 @@ import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/database/model"
 	"cloudgobrrr/backend/pkg/helpers"
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
 )
 
-type bindingSignin struct {
+type bindingAuthSignin struct {
 	Username    string `json:"username"    binding:"required"`
 	Password    string `json:"password"    binding:"required"`
 	Description string `json:"description" binding:"required"`
 }
 
 func HttpAuthSignin(c *gin.Context) {
-	var json bindingSignin
+	var json bindingAuthSignin
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
 		return
@@ -36,14 +36,14 @@ func HttpAuthSignin(c *gin.Context) {
 		return
 	}
 
-	if !helpers.CheckPasswordHash(json.Password, user.Password) {
+	if !helpers.PasswordCheckHash(json.Password, user.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "error": "invalid username or password"})
 		return
 	}
 
 	token, err := model.SessionCreateToken(user, json.Description)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
 		return
 	}
@@ -51,7 +51,7 @@ func HttpAuthSignin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "token": token})
 }
 
-type bindingSignup struct {
+type bindingAuthSignup struct {
 	Username string `json:"username" binding:"required"`
 	Email    string `json:"email"    binding:"required"`
 	Password string `json:"password" binding:"required"`
@@ -63,7 +63,7 @@ func HttpAuthSignup(c *gin.Context) {
 		return
 	}
 
-	var json bindingSignup
+	var json bindingAuthSignup
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
 		return
@@ -87,13 +87,13 @@ func HttpAuthSignup(c *gin.Context) {
 
 }
 
-type bindingChangePassword struct {
+type bindingAuthChangePassword struct {
 	OldPassword string `json:"oldPassword" binding:"required"`
 	NewPassword string `json:"newPassword" binding:"required"`
 }
 
 func HttpAuthChangePassword(c *gin.Context) {
-	var json bindingChangePassword
+	var json bindingAuthChangePassword
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
 		return
@@ -105,7 +105,7 @@ func HttpAuthChangePassword(c *gin.Context) {
 		return
 	}
 
-	if !helpers.CheckPasswordHash(json.OldPassword, user.Password) {
+	if !helpers.PasswordCheckHash(json.OldPassword, user.Password) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "error", "error": "invalid old password"})
 		return
 	}
@@ -125,84 +125,8 @@ func HttpAuthChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "ok"})
 }
 
-type bindingSessionChangeDescription struct {
-	Id             uint   `json:"sessionId" binding:"required"`
-	NewDescription string `json:"newDescription" binding:"required"`
-}
-
-func HttpAuthSessionChangeDescription(c *gin.Context) {
-	var json bindingSessionChangeDescription
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
-		return
-	}
-
-	oldDescription, err := model.SessionChangeDescription(json.Id, json.NewDescription)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "oldDescription": oldDescription})
-}
-
-type bindingCreateBasicAuth struct {
-	Description string `json:"description" binding:"required"`
-}
-
-func HttpAuthCreateBasicAuth(c *gin.Context) {
-	var json bindingCreateBasicAuth
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
-		return
-	}
-
-	user, err := model.UserGetByID(c.MustGet("userID").(uint))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
-		return
-	}
-
-	basicPassword, err := model.SessionCreateBasic(user, json.Description)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "username": user.Username, "password": basicPassword})
-}
-
-func HttpAuthListSessions(c *gin.Context) {
-	sessions, err := model.SessionGetAll(c.MustGet("userID").(uint))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "sessions": sessions})
-}
-
-type bindingDeleteAuthToken struct {
-	ID uint `form:"id" binding:"required"`
-}
-
-func HttpAuthDeleteSessionWithID(c *gin.Context) {
-	var query bindingDeleteAuthToken
-	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
-		return
-	}
-
-	if err := model.SessionDeleteWithID(query.ID, c.MustGet("userID").(uint)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
-}
-
-func HttpAuthCheck(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{
+func HttpAuthDetails(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
 		"status": "ok",
 		"userDetails": gin.H{
 			"id":        c.MustGet("userID").(uint),

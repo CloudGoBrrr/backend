@@ -3,7 +3,7 @@ package model
 import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/pkg/helpers"
-	"errors"
+	"fmt"
 	"os"
 
 	"gorm.io/gorm"
@@ -60,14 +60,14 @@ func UserCreate(username string, email string, plainTextPassword string) error {
 
 		// ---
 		// create user in database
-		hash, err := helpers.HashPassword(plainTextPassword)
+		hash, err := helpers.PasswordHash(plainTextPassword)
 		if err != nil {
 			return err
 		}
 		db.Create(&User{Username: username, Email: email, Password: hash})
 		return nil
 	}
-	return errors.New("user already exists")
+	return fmt.Errorf("user already exists")
 }
 
 // ToDo: add quota
@@ -78,9 +78,9 @@ func UserChangePassword(userID uint, plainTextPassword string) error {
 	var user User
 	db.Where("id = ?", userID).First(&user)
 	if user.ID == 0 {
-		return errors.New("user does not exist")
+		return fmt.Errorf("user does not exist")
 	}
-	hash, err := helpers.HashPassword(plainTextPassword)
+	hash, err := helpers.PasswordHash(plainTextPassword)
 	if err != nil {
 		return err
 	}
@@ -94,7 +94,7 @@ func UserGetByUsername(username string) (User, error) {
 	var user User
 	db.Where("username = ?", username).First(&user)
 	if user.ID == 0 {
-		return User{}, errors.New("user does not exist")
+		return User{}, fmt.Errorf("user does not exist")
 	}
 	return user, nil
 }
@@ -104,7 +104,7 @@ func UserGetByID(userID uint) (User, error) {
 	var user User
 	db.Where("id = ?", userID).First(&user)
 	if user.ID == 0 {
-		return User{}, errors.New("user does not exist")
+		return User{}, fmt.Errorf("user does not exist")
 	}
 	return user, nil
 }

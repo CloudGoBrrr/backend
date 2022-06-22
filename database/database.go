@@ -8,23 +8,24 @@ import (
 	"gorm.io/gorm"
 )
 
-var DB *gorm.DB
+var db *gorm.DB
 
-var SQLDB *sql.DB
+var sqlDb *sql.DB
 
 func InitDB() error {
 	var err error
 
-	if SQLDB != nil {
-		SQLDB.Close()
+	if sqlDb != nil {
+		sqlDb.Close()
 	}
 
-	DB, err = NewDB()
+	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return err
 	}
 
-	SQLDB, err = DB.DB()
+	sqlDb, err = db.DB()
 	if err != nil {
 		return err
 	}
@@ -33,20 +34,9 @@ func InitDB() error {
 }
 
 func GetDB() *gorm.DB {
-	return DB
+	return db
 }
 
 func GetSQLDB() *sql.DB {
-	return SQLDB
-}
-
-func NewDB() (*gorm.DB, error) {
-	// open database connection
-	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	return sqlDb
 }

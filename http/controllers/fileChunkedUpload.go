@@ -2,8 +2,8 @@ package controllers
 
 import (
 	"cloudgobrrr/backend/pkg/helpers"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func HttpFileUpload(c *gin.Context) {
+func HttpFileChunkedUpload(c *gin.Context) {
 	fileChunk, _, err := c.Request.FormFile("chunk")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "content-Type should be multipart/form-data"})
@@ -31,13 +31,13 @@ func HttpFileUpload(c *gin.Context) {
 		return
 	}
 
-	rangeStart, rangeEnd, fileSize, err := helpers.GetContentRange(c.Request.Header.Get("Content-Range"))
+	rangeStart, rangeEnd, fileSize, err := helpers.HttpGetContentRange(c.Request.Header.Get("Content-Range"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
 
-	if err := helpers.ChunkUploadTmpMetaFile(rangeStart, rangeEnd, tempDir, fileName); err != nil {
+	if err := helpers.ChunkedUploadMetaFile(rangeStart, rangeEnd, tempDir, fileName); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
 		return
 	}
@@ -78,13 +78,13 @@ func HttpFileUpload(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"status": "uploading"})
 }
 
-type bindingFileUploadFinish struct {
+type bindingFileChunkedUploadFinish struct {
 	Path string `json:"path" binding:"required"`
 	Name string `json:"name" binding:"required"`
 }
 
-func HttpFileUploadFinish(c *gin.Context) {
-	var json bindingFileUploadFinish
+func HttpFileChunkedUploadFinish(c *gin.Context) {
+	var json bindingFileChunkedUploadFinish
 	if err := c.ShouldBindJSON(&json); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
 		return
@@ -109,7 +109,7 @@ func HttpFileUploadFinish(c *gin.Context) {
 
 	err = os.Rename(tempFilePath, filepath.Join(path, json.Name))
 	if err != nil {
-		fmt.Println("move error: ", err)
+		log.Println("move error: ", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "error moving file"})
 		return
 	}
