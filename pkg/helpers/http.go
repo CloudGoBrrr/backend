@@ -43,3 +43,7 @@ func HttpGetContentRange(header string) (int, int, int, error) {
 
 	return rangeStart, rangeEnd, fileSize, nil
 }
+
+func HttpSplitPath(path string) []string {
+	return StringArrayDeleteEmpty(strings.Split(path, "/"))
+}

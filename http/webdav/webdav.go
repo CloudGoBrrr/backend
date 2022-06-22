@@ -2,6 +2,7 @@ package webdav
 
 import (
 	"cloudgobrrr/backend/http/middleware"
+	"cloudgobrrr/backend/pkg/helpers"
 	"log"
 	"net/http"
 	"os"
@@ -23,13 +24,27 @@ func Handle() gin.HandlerFunc {
 
 	return func(c *gin.Context) {
 		if strings.HasPrefix(c.Request.URL.Path, web.Prefix) {
+			parsed := helpers.HttpSplitPath(c.Request.URL.Path)
+			len := len(parsed)
+
+			if len < 4 && c.Request.Method == "GET" {
+				c.Data(http.StatusBadRequest, "text/plain; charset=utf-8", []byte("This is a webdav interface. Please use a webdav client to access the files."))
+				c.Abort()
+				return
+			}
+
+			if len < 3 {
+				c.AbortWithStatus(http.StatusBadRequest)
+				return
+			}
+
 			if !middleware.ValidateBasic(c) {
 				return
 			}
 
 			expectedPrefix := filepath.Join(web.Prefix, c.GetString("userName"))
 			if !strings.HasPrefix(c.Request.URL.Path, expectedPrefix) {
-				c.AbortWithStatus(403)
+				c.AbortWithStatus(http.StatusForbidden)
 				return
 			}
 
