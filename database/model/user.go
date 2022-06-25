@@ -14,6 +14,7 @@ type User struct {
 	Username string
 	Email    string
 	Password string
+	IsAdmin  bool `gorm:"default:false"`
 }
 
 // CREATE
