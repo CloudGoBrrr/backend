@@ -21,6 +21,10 @@ func EnvBuild() {
 	envDefault("USER_DIRECTORY", filepath.Join(os.Getenv("DATA_DIRECTORY"), "user"))
 	envDefault("TEMP_DIRECTORY", filepath.Join(os.Getenv("DATA_DIRECTORY"), "tmp"))
 
+	envDefault("ADMIN_USERNAME", "admin")
+	envDefault("ADMIN_PASSWORD", "admin")
+	envDefault("ADMIN_EMAIL", "admin@example.com")
+
 	envDefault("SERVE_PUBLIC", "true")
 	envDefault("PUBLIC_PATH", "./frontend/build")
 	envDefault("PUBLIC_REGISTRATION", "false")

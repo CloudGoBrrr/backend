@@ -4,6 +4,7 @@ import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/database/model"
 	"cloudgobrrr/backend/pkg/env"
+	"cloudgobrrr/backend/pkg/migrator/migrations"
 	"log"
 	"os"
 	"path/filepath"
@@ -36,11 +37,11 @@ func RunMigrations() {
 	db.Model(&model.User{}).Count(&count)
 	if count == 0 {
 		log.Println("No users found, creating admin user")
-		err := model.UserCreate("admin", "admin@example.com", "admin")
+		err := model.UserCreate(os.Getenv("ADMIN_USERNAME"), os.Getenv("ADMIN_EMAIL"), os.Getenv("ADMIN_PASSWORD"))
 		if err != nil {
 			log.Fatalf("Failed to create admin user: %s", err)
 		}
 	}
 
-	// ToDo: write migration system
+	migrations.Migration1()
 }
