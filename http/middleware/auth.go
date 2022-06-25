@@ -27,6 +27,7 @@ func AuthenticateToken(c *gin.Context) {
 	c.Set("userName", user.Username)
 	c.Set("userEmail", user.Email)
 	c.Set("sessionId", session.ID)
+	c.Set("isAdmin", user.IsAdmin)
 
 	c.Next()
 }
@@ -57,6 +58,7 @@ func ValidateBasic(c *gin.Context) bool {
 	c.Set("userName", user.Username)
 	c.Set("userEmail", user.Email)
 	c.Set("sessionId", session.ID)
+	c.Set("isAdmin", user.IsAdmin)
 
 	return true
 }

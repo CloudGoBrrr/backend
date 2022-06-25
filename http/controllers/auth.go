@@ -133,6 +133,7 @@ func HttpAuthDetails(c *gin.Context) {
 			"username":  c.MustGet("userName").(string),
 			"email":     c.MustGet("userEmail").(string),
 			"sessionId": c.MustGet("sessionId").(uint),
+			"isAdmin":   c.MustGet("isAdmin").(bool),
 		},
 	})
 }
