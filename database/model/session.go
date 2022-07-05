@@ -4,6 +4,7 @@ import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/pkg/helpers"
 	"fmt"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -133,4 +134,13 @@ func SessionChangeDescription(sessionID uint, newDescription string) (string, er
 	session.Description = newDescription
 	db.Save(&session)
 	return oldDescription, nil
+}
+
+// CLEANUP
+func SessionCleanup() error {
+	// Cleanup sessions older than 14 days
+	db := database.GetDB()
+	deletedAt := time.Now().Add(-14 * 24 * time.Hour)
+	db.Where("deleted_at < ?", deletedAt).Unscoped().Delete(&Session{})
+	return nil
 }

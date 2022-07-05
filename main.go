@@ -3,6 +3,7 @@ package main
 import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/http"
+	"cloudgobrrr/backend/pkg/cron"
 	"cloudgobrrr/backend/pkg/env"
 	"cloudgobrrr/backend/pkg/migrator"
 	"log"
@@ -44,6 +45,9 @@ func main() {
 
 	// Run Migrations
 	migrator.RunMigrations()
+
+	// Start cronjobs
+	cron.InitCron()
 
 	// HTTP Boot
 	http.NewHttpServer()

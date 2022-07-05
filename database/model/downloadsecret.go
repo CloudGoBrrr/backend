@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 
 	"cloudgobrrr/backend/database"
@@ -46,4 +48,11 @@ func DownloadSecretGetBySecret(secret string) (*DownloadSecret, error) {
 	return &downloadSecret, nil
 }
 
-// ToDo: delete secrets older than X days
+// CLEANUP
+func DownloadSecretCleanup() error {
+	//delete all secrets older than 2 hour
+	db := database.GetDB()
+	createdAt := time.Now().Add(-2 * time.Hour)
+	db.Where("created_at < ?", createdAt).Unscoped().Delete(&DownloadSecret{})
+	return nil
+}
