@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"cloudgobrrr/backend/database/model"
+	"cloudgobrrr/backend/http/binding"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -11,14 +12,14 @@ func AuthenticateToken(c *gin.Context) {
 	header := c.Request.Header.Get("Authorization")
 
 	if header == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, binding.ResErrorUnauthorized)
 		c.Abort()
 		return
 	}
 
 	user, session, err := model.SessionGetUserToken(header)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "unauthorized"})
+		c.JSON(http.StatusUnauthorized, binding.ResErrorUnauthorized)
 		c.Abort()
 		return
 	}

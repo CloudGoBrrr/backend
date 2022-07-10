@@ -2,83 +2,71 @@ package controllers
 
 import (
 	"cloudgobrrr/backend/database/model"
+	"cloudgobrrr/backend/http/binding"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type bindingSessionChangeDescription struct {
-	Id             uint   `json:"sessionId" binding:"required"`
-	NewDescription string `json:"newDescription" binding:"required"`
-}
-
 func HttpSessionChangeDescription(c *gin.Context) {
-	var json bindingSessionChangeDescription
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+	var req binding.ReqSessionChangeDescription
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
-	oldDescription, err := model.SessionChangeDescription(json.Id, json.NewDescription)
+	oldDescription, err := model.SessionChangeDescription(req.Id, req.NewDescription)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "oldDescription": oldDescription})
-}
-
-type bindingSessionCreateBasicAuth struct {
-	Description string `json:"description" binding:"required"`
+	c.JSON(http.StatusOK, binding.ResSessionChangeDescription{OldDescription: oldDescription})
 }
 
 func HttpSessionCreateBasicAuth(c *gin.Context) {
-	var json bindingSessionCreateBasicAuth
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+	var req binding.ReqSessionCreateBasicAuth
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
 	user, err := model.UserGetByID(c.MustGet("userID").(uint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	basicPassword, err := model.SessionCreateBasic(user, json.Description)
+	basicPassword, err := model.SessionCreateBasic(user, req.Description)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "username": user.Username, "password": basicPassword})
+	c.JSON(http.StatusOK, binding.ResSessionCreateBasicAuth{Username: user.Username, Password: basicPassword})
 }
 
 func HttpSessionList(c *gin.Context) {
 	sessions, err := model.SessionGetAll(c.MustGet("userID").(uint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "sessions": sessions})
-}
-
-type bindingSessionDelete struct {
-	ID uint `form:"id" binding:"required"`
+	c.JSON(http.StatusOK, binding.ResSessionList{Sessions: sessions})
 }
 
 func HttpSessionDeleteWithID(c *gin.Context) {
-	var query bindingSessionDelete
+	var query binding.ReqSessionDeleteWithID
 	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
 	if err := model.SessionDeleteWithID(query.ID, c.MustGet("userID").(uint)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, binding.ResEmpty)
 }

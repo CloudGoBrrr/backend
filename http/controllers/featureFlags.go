@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cloudgobrrr/backend/http/binding"
 	"cloudgobrrr/backend/pkg/env"
 	"net/http"
 	"os"
@@ -9,5 +10,8 @@ import (
 )
 
 func HttpFeatureFlagGet(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{"status": "ok", "version": env.VersionGet(), "featureFlags": gin.H{"PUBLIC_REGISTRATION": os.Getenv("PUBLIC_REGISTRATION"), "WEBDAV_ENABLED": os.Getenv("WEBDAV_ENABLED")}})
+	c.JSON(http.StatusOK, binding.ResFeatureFlags{Version: env.VersionGet(), FeatureFlags: binding.FeatureFlags{
+		PublicRegistration: os.Getenv("PUBLIC_REGISTRATION"),
+		WebDav:             os.Getenv("WEBDAV_ENABLED"),
+	}})
 }

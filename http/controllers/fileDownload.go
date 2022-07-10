@@ -3,6 +3,7 @@ package controllers
 import (
 	"cloudgobrrr/backend/database"
 	"cloudgobrrr/backend/database/model"
+	"cloudgobrrr/backend/http/binding"
 	"cloudgobrrr/backend/pkg/helpers"
 	"net/http"
 	"path/filepath"
@@ -10,58 +11,49 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type bindingFileDownloadCreateSecret struct {
-	Path string `json:"path" binding:"required"`
-	Name string `json:"name" binding:"required"`
-}
-
 func HttpFileDownloadCreateSecret(c *gin.Context) {
-	var json bindingFileDownloadCreateSecret
+	var json binding.ReqFileDownloadCreateSecret
 	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
 	path, err := helpers.GetAndCheckPath(c.MustGet("userName").(string), json.Path)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidPath)
 		return
 	}
 
 	if !helpers.FileExists(path + "/" + json.Name) {
-		c.JSON(http.StatusNotFound, gin.H{"status": "error", "error": "file not found"})
+		c.JSON(http.StatusNotFound, binding.ResErrorNotFound)
 		return
 	}
 
 	secret, err := model.DownloadSecretCreate(c.MustGet("userID").(uint), path, json.Name)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "secret": secret})
-}
-
-type bindingFileDownloadWithSecret struct {
-	Secret string `form:"secret" binding:"required"`
+	c.JSON(http.StatusOK, binding.ResFileDownloadCreateSecret{Secret: secret})
 }
 
 func HttpFileDownloadWithSecret(c *gin.Context) {
-	var query bindingFileDownloadWithSecret
+	var query binding.ReqFileDownloadWithSecret
 	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
 	downloadSecret, err := model.DownloadSecretGetBySecret(query.Secret)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
+		c.JSON(http.StatusNotFound, binding.ResErrorNotFound)
 		return
 	}
 
 	// delete used secret
 	if err := database.GetDB().Delete(&downloadSecret).Error; err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "an error occured while deleting secret"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
