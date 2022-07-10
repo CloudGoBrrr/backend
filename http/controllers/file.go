@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"cloudgobrrr/backend/http/binding"
 	"cloudgobrrr/backend/pkg/helpers"
 	"net/http"
 	"os"
@@ -9,35 +10,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type bindingFileDelete struct {
-	Path string `form:"path" binding:"required"`
-	Name string `form:"name" binding:"required"`
-}
-
 func HttpFileDelete(c *gin.Context) {
-	var query bindingFileDelete
+	var query binding.ReqFileDelete
 	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
 	path, err := helpers.GetAndCheckPath(c.MustGet("userName").(string), query.Path)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": err.Error()})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidPath)
 		return
 	}
 
 	removePath := filepath.Join(path, query.Name)
 
 	if !helpers.FileExists(removePath) {
-		c.JSON(http.StatusNotFound, gin.H{"status": "error", "error": "file not found"})
+		c.JSON(http.StatusNotFound, binding.ResErrorNotFound)
 		return
 	}
 
 	if err := os.RemoveAll(removePath); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "an error occured while deleting file"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "deleted"})
+	c.JSON(http.StatusOK, binding.ResEmpty)
 }
