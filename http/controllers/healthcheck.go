@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"cloudgobrrr/backend/http/binding"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func HttpHealthcheck(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, binding.ResEmpty)
 }

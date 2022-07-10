@@ -17,3 +17,11 @@ type ResSessionCreateBasicAuth struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
+
+type ResSessionList struct {
+	Sessions []map[string]interface{} `json:"sessions"`
+}
+
+type ReqSessionDeleteWithID struct {
+	ID uint `form:"id" binding:"required"`
+}

@@ -9,5 +9,5 @@ import (
 )
 
 func HttpFeatureFlagGet(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, gin.H{"status": "ok", "version": env.VersionGet(), "featureFlags": gin.H{"PUBLIC_REGISTRATION": os.Getenv("PUBLIC_REGISTRATION"), "WEBDAV_ENABLED": os.Getenv("WEBDAV_ENABLED")}})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "version": env.VersionGet(), "featureFlags": gin.H{"PUBLIC_REGISTRATION": os.Getenv("PUBLIC_REGISTRATION"), "WEBDAV_ENABLED": os.Getenv("WEBDAV_ENABLED")}})
 }

@@ -49,28 +49,24 @@ func HttpSessionCreateBasicAuth(c *gin.Context) {
 func HttpSessionList(c *gin.Context) {
 	sessions, err := model.SessionGetAll(c.MustGet("userID").(uint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "sessions": sessions})
-}
-
-type bindingSessionDelete struct {
-	ID uint `form:"id" binding:"required"`
+	c.JSON(http.StatusOK, binding.ResSessionList{Sessions: sessions})
 }
 
 func HttpSessionDeleteWithID(c *gin.Context) {
-	var query bindingSessionDelete
+	var query binding.ReqSessionDeleteWithID
 	if err := c.ShouldBindQuery(&query); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+		c.JSON(http.StatusBadRequest, binding.ResErrorInvalidRequest)
 		return
 	}
 
 	if err := model.SessionDeleteWithID(query.ID, c.MustGet("userID").(uint)); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, binding.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+	c.JSON(http.StatusOK, binding.ResEmpty)
 }
