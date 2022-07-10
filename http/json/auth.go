@@ -8,3 +8,12 @@ type ReqSessionChangeDescription struct {
 type ResSessionChangeDescription struct {
 	OldDescription string `json:"oldDescription"`
 }
+
+type ReqSessionCreateBasicAuth struct {
+	Description string `json:"description" binding:"required"`
+}
+
+type ResSessionCreateBasicAuth struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}

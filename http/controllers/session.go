@@ -24,30 +24,26 @@ func HttpSessionChangeDescription(c *gin.Context) {
 	c.JSON(http.StatusOK, json.ResSessionChangeDescription{OldDescription: oldDescription})
 }
 
-type bindingSessionCreateBasicAuth struct {
-	Description string `json:"description" binding:"required"`
-}
-
 func HttpSessionCreateBasicAuth(c *gin.Context) {
-	var json bindingSessionCreateBasicAuth
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+	var req json.ReqSessionCreateBasicAuth
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, json.ResErrorInvalidRequest)
 		return
 	}
 
 	user, err := model.UserGetByID(c.MustGet("userID").(uint))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, json.ResErrorInternalServerError)
 		return
 	}
 
-	basicPassword, err := model.SessionCreateBasic(user, json.Description)
+	basicPassword, err := model.SessionCreateBasic(user, req.Description)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, json.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "username": user.Username, "password": basicPassword})
+	c.JSON(http.StatusOK, json.ResSessionCreateBasicAuth{Username: user.Username, Password: basicPassword})
 }
 
 func HttpSessionList(c *gin.Context) {
