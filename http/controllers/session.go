@@ -2,30 +2,26 @@ package controllers
 
 import (
 	"cloudgobrrr/backend/database/model"
+	"cloudgobrrr/backend/http/json"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type bindingSessionChangeDescription struct {
-	Id             uint   `json:"sessionId" binding:"required"`
-	NewDescription string `json:"newDescription" binding:"required"`
-}
-
 func HttpSessionChangeDescription(c *gin.Context) {
-	var json bindingSessionChangeDescription
-	if err := c.ShouldBindJSON(&json); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"status": "error", "error": "invalid request"})
+	var req json.ReqSessionChangeDescription
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, json.ResErrorInvalidRequest)
 		return
 	}
 
-	oldDescription, err := model.SessionChangeDescription(json.Id, json.NewDescription)
+	oldDescription, err := model.SessionChangeDescription(req.Id, req.NewDescription)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"status": "error", "error": "internal server error"})
+		c.JSON(http.StatusInternalServerError, json.ResErrorInternalServerError)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "oldDescription": oldDescription})
+	c.JSON(http.StatusOK, json.ResSessionChangeDescription{OldDescription: oldDescription})
 }
 
 type bindingSessionCreateBasicAuth struct {
