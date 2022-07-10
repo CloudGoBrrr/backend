@@ -1,4 +1,4 @@
-package json
+package binding
 
 type ResError struct {
 	Error string `json:"error"`

@@ -1,4 +1,4 @@
-package json
+package binding
 
 type ReqSessionChangeDescription struct {
 	Id             uint   `json:"sessionId" binding:"required"`
