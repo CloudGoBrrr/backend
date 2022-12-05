@@ -32,7 +32,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server
-          path: server
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
@@ -49,7 +48,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server
-          path: server
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
