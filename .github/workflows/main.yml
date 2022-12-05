@@ -1,0 +1,57 @@
+name: Build and upload
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+      - name: Setup go
+        uses: actions/setup-go@v3
+        with:
+          go-version: "^1.18.0"
+      - name: Generate build
+        run: go build -ldflags="-X 'cloudgobrrr/backend/pkg/env.version=${{ github.ref_name }}'" -o server main.go
+      - name: Upload artifact inside workflow
+        uses: actions/upload-artifact@v3
+        with:
+          name: server
+          path: server
+
+  release-pre:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: endsWith(github.ref, '-dev')
+    steps:
+      - name: Download artifact of build job
+        uses: actions/download-artifact@v3
+        with:
+          name: server
+          path: server
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          prerelease: true
+          files: server
+          generate_release_notes: true
+
+  release:
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: endsWith(github.ref , '-dev') != true
+    steps:
+      - name: Download artifact of build job
+        uses: actions/download-artifact@v3
+        with:
+          name: server
+          path: server
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: server
+          generate_release_notes: true
