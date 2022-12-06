@@ -7,6 +7,10 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        os: ["linux"]
+        arch: ["amd64", "arm64"]
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -16,12 +20,12 @@ jobs:
         with:
           go-version: "^1.18.0"
       - name: Generate build
-        run: go build -ldflags="-X 'cloudgobrrr/backend/pkg/env.version=${{ github.ref_name }}'" -o server main.go
+        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags="-X 'cloudgobrrr/backend/pkg/env.version=${{ github.ref_name }}'" -o server.${{ matrix.os }}.${{ matrix.arch }} main.go
       - name: Upload artifact inside workflow
         uses: actions/upload-artifact@v3
         with:
           name: server
-          path: server
+          path: server.${{ matrix.os }}.${{ matrix.arch }}
 
   release-pre:
     runs-on: ubuntu-latest
@@ -32,11 +36,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server
+          path: server
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          files: server
+          files: server/*
           generate_release_notes: true
 
   release:
@@ -48,8 +53,9 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: server
+          path: server
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
-          files: server
+          files: server/*
           generate_release_notes: true
