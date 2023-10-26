@@ -1,42 +1,62 @@
 package database
 
 import (
-	"database/sql"
-	"os"
+	"cloudgobrrr/config"
+	"cloudgobrrr/database/models"
+	"fmt"
 
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
 var db *gorm.DB
+var conf *viper.Viper
 
-var sqlDb *sql.DB
-
-func InitDB() error {
+func init() {
 	var err error
+	conf = config.Get()
 
-	if sqlDb != nil {
-		sqlDb.Close()
+	if conf.GetString("database.backend") == "mysql" {
+		log.Debug().
+			Str("backend", "mysql").
+			Msg("database backend selected")
+		dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+			conf.GetString("database.mysql.username"),
+			conf.GetString("database.mysql.password"),
+			conf.GetString("database.mysql.host"),
+			conf.GetString("database.mysql.port"),
+			conf.GetString("database.mysql.name"))
+		db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	} else if conf.GetString("database.backend") == "sqlite" {
+		log.Debug().
+			Str("backend", "sqlite").
+			Msg("database backend selected")
+		db, err = gorm.Open(sqlite.Open(conf.GetString("database.sqlite.path")), &gorm.Config{})
+	} else if conf.GetString("database.backend") == "sqlite-memory" || conf.GetString("database.backend") == "memory" {
+		log.Debug().
+			Str("backend", "sqlite-memory").
+			Msg("database backend selected")
+		db, err = gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	} else {
+		log.Fatal().
+			Str("backend", conf.GetString("database.backend")).
+			Msg("invalid db backend")
 	}
 
-	dsn := os.Getenv("DB_USER") + ":" + os.Getenv("DB_PASSWORD") + "@tcp(" + os.Getenv("DB_HOST") + ":" + os.Getenv("DB_PORT") + ")/" + os.Getenv("DB_NAME") + "?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return err
+		log.Fatal().Msg(err.Error())
 	}
 
-	sqlDb, err = db.DB()
-	if err != nil {
-		return err
-	}
+	models.Prepare(db)
 
-	return nil
+	log.Debug().Msg("database connection established")
+	runMigrator()
 }
 
-func GetDB() *gorm.DB {
+// Get returns the database connection
+func Get() *gorm.DB {
 	return db
-}
-
-func GetSQLDB() *sql.DB {
-	return sqlDb
 }

@@ -1,65 +1,80 @@
 package middleware
 
 import (
-	"cloudgobrrr/backend/database/model"
-	"cloudgobrrr/backend/http/binding"
-	"net/http"
+	"cloudgobrrr/database/models"
+	"cloudgobrrr/structs"
+	"cloudgobrrr/utils"
+	"errors"
+	"strings"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 )
 
-func AuthenticateToken(c *gin.Context) {
-	header := c.Request.Header.Get("Authorization")
+var errUnauthorized = utils.ConvertStringsToErrorResponse("unauthorized")
 
-	if header == "" {
-		c.JSON(http.StatusUnauthorized, binding.ResErrorUnauthorized)
-		c.Abort()
-		return
+func Auth(c *fiber.Ctx) error {
+	// get auth header
+	authHeader := c.Get("Authorization")
+	if authHeader == "" {
+		c.Set("WWW-Authenticate", "Basic realm=\"User Visible Realm\", charset=\"UTF-8\"")
+		return c.Status(fiber.StatusUnauthorized).JSON(errUnauthorized)
 	}
 
-	user, session, err := model.SessionGetUserToken(header)
+	// split auth header
+	authHeaderSplit := strings.Split(authHeader, " ")
+	if len(authHeaderSplit) != 2 {
+		return c.Status(fiber.StatusUnauthorized).JSON(errUnauthorized)
+	}
+
+	// get token type
+	tokenType := strings.ToLower(authHeaderSplit[0])
+
+	// var declarations
+	var user *structs.User
+	var err error
+
+	if tokenType == "bearer" {
+		// bearer token
+		user, err = bearerAuth(authHeaderSplit[1])
+	} else if tokenType == "basic" {
+		// basic token
+		user, err = basicAuth(authHeaderSplit[1])
+	} else {
+		return c.Status(fiber.StatusUnauthorized).JSON(errUnauthorized)
+	}
+
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, binding.ResErrorUnauthorized)
-		c.Abort()
-		return
+		return c.Status(fiber.StatusUnauthorized).JSON(errUnauthorized)
 	}
 
-	c.Set("userID", user.ID)
-	c.Set("userName", user.Username)
-	c.Set("userEmail", user.Email)
-	c.Set("sessionId", session.ID)
-	c.Set("isAdmin", user.IsAdmin)
+	// set locals
+	c.Locals("user", user)
 
-	c.Next()
+	return c.Next()
 }
 
-func AuthenticateBasic(c *gin.Context) {
-	if !ValidateBasic(c) {
-		return
-	}
-
-	c.Next()
+func bearerAuth(token string) (*structs.User, error) {
+	return utils.DecodeJWT(token)
 }
 
-func ValidateBasic(c *gin.Context) bool {
-	username, password, hasAuth := c.Request.BasicAuth()
-	if !hasAuth {
-		c.Writer.Header().Set("WWW-Authenticate", "Basic realm=\"User Visible Realm\", charset=\"UTF-8\"")
-		c.AbortWithStatus(401)
-		return false
-	}
-
-	user, session, err := model.SessionGetUserBasic(username, password)
+func basicAuth(token string) (*structs.User, error) {
+	// get token from database
+	tokenModel, err := models.TokenGetByEncoded(token)
 	if err != nil {
-		c.AbortWithStatus(401)
-		return false
+		return nil, err
+	}
+	if tokenModel.ID == utils.EmptyULID {
+		return nil, errors.New("token not found")
 	}
 
-	c.Set("userID", user.ID)
-	c.Set("userName", user.Username)
-	c.Set("userEmail", user.Email)
-	c.Set("sessionId", session.ID)
-	c.Set("isAdmin", user.IsAdmin)
+	// get user by id
+	user, err := models.UserGetById(tokenModel.UserID)
+	if err != nil {
+		return nil, err
+	}
+	if user.ID == 0 {
+		return nil, errors.New("user not found")
+	}
 
-	return true
+	return &structs.User{ID: user.ID, Username: user.Username, IsAdmin: user.IsAdmin}, nil
 }

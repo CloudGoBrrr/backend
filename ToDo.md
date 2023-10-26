@@ -1,0 +1,2 @@
+- add swagger support
+- add tests
