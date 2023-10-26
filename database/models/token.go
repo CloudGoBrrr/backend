@@ -19,8 +19,8 @@ type Token struct {
 
 // TokenCreate creates a token in the database
 func TokenCreate(userId uint, description string) (ulid.ULID, string, error) {
-	amount := conf.GetInt("auth.token.elementAmount")
-	length := conf.GetInt("auth.token.elementLength")
+	amount := conf.GetInt("security.token.groups")
+	length := conf.GetInt("security.token.length")
 	var generatedPassword string
 
 	for i := 0; i < amount; i++ {

@@ -43,8 +43,9 @@ func defaults() {
 	conf.SetDefault("logging.http", false)
 	// Auth
 	conf.SetDefault("auth.signup", false)
-	conf.SetDefault("auth.token.elementAmount", 4)
-	conf.SetDefault("auth.token.elementLength", 8)
+	// Security
+	conf.SetDefault("security.token.groups", 4)
+	conf.SetDefault("security.token.length", 8)
 	// JWT
 	conf.SetDefault("jwt.secret", "")
 	conf.SetDefault("jwt.signingMethod", "HS256") // HS256
