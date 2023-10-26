@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/contrib/fiberzerolog"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/proxy"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -39,6 +40,18 @@ func init() {
 	apiGroup := app.Group("/api")
 	v1.Setup(apiGroup.Group("/v1"))
 	webdav.Setup(apiGroup.Group("/webdav"))
+
+	// frontend
+	if conf.GetBool("frontend.enable") {
+		switch conf.GetString("frontend.mode") {
+		case "static":
+			log.Debug().Str("mode", "static").Msg("frontend enabled")
+			app.Static("/", conf.GetString("frontend.static.path"))
+		case "proxy":
+			log.Debug().Str("mode", "proxy").Msg("frontend enabled")
+			app.Use("/", proxy.BalancerForward([]string{conf.GetString("frontend.proxy.url")}))
+		}
+	}
 }
 
 // Error handler for failed requests

@@ -23,6 +23,11 @@ func defaults() {
 	conf.SetDefault("database.mysql.username", "root")
 	conf.SetDefault("database.mysql.password", "")
 	conf.SetDefault("database.mysql.name", "cloudgobrrr")
+	// Frontend
+	conf.SetDefault("frontend.enable", true)
+	conf.SetDefault("frontend.mode", "static") // static, proxy
+	conf.SetDefault("frontend.static.path", "./dist")
+	conf.SetDefault("frontend.proxy.url", "http://localhost:3000")
 	// Filesystem
 	conf.SetDefault("filesystem.backend", "os") // os, memory
 	conf.SetDefault("filesystem.os.path", "./storage")
