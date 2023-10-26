@@ -16,6 +16,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+var lettersWithDash = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
+var lettersWithoutDash = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
 func init() {
 	assertAvailablePRNG()
 }
@@ -51,21 +54,17 @@ func GenerateRandomBytes(n int) ([]byte, error) {
 // number generator fails to function correctly, in which
 // case the caller should not continue.
 func GenerateRandomString(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-"
-	ret := make([]byte, n)
-	for i := 0; i < n; i++ {
-		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
-		if err != nil {
-			return "", err
-		}
-		ret[i] = letters[num.Int64()]
-	}
-
-	return string(ret), nil
+	return GenerateRandomStringWithLetters(n, lettersWithDash)
 }
 
+// GenerateRandomStringNoDash returns a securely generated random string without dashes.
+// See GenerateRandomString for more information.
 func GenerateRandomStringNoDash(n int) (string, error) {
-	const letters = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	return GenerateRandomStringWithLetters(n, lettersWithoutDash)
+}
+
+// GenerateRandomStringWithLetters returns a securely generated random string with the given letters.
+func GenerateRandomStringWithLetters(n int, letters string) (string, error) {
 	ret := make([]byte, n)
 	for i := 0; i < n; i++ {
 		num, err := rand.Int(rand.Reader, big.NewInt(int64(len(letters))))
