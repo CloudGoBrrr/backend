@@ -78,7 +78,7 @@ func authSignin(c *fiber.Ctx) error {
 	}
 
 	// check if user exists
-	if user.ID == 0 {
+	if user.ID == utils.EmptyULID {
 		return c.Status(fiber.StatusUnauthorized).JSON(errInvalidCredentials)
 	}
 
@@ -192,6 +192,7 @@ func authRefresh(c *fiber.Ctx) error {
 
 	// check if session is expired
 	if session.ExpiresAt < time.Now().Unix() {
+		// ToDo: delete session
 		return c.Status(fiber.StatusBadRequest).JSON(errSessionNotFound)
 	}
 
@@ -207,15 +208,12 @@ func authRefresh(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(utils.ConvertErrorsToErrorResponse(err))
 	}
 
-	// delete session and create new one
-	if err := models.SessionDeleteByToken(req.Session); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(utils.ConvertErrorsToErrorResponse(err))
-	}
-	var sessionString string
-	if sessionString, err = models.SessionCreate(user.ID, session.Description, session.Remember); err != nil {
+	// update session
+	newSessionToken, err := models.SessionUpdateToken(session)
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(utils.ConvertErrorsToErrorResponse(err))
 	}
 
 	// return response
-	return c.JSON(response.Success{Success: true, Data: response.AuthToken{Token: token, Session: sessionString}})
+	return c.JSON(response.Success{Success: true, Data: response.AuthToken{Token: token, Session: newSessionToken}})
 }

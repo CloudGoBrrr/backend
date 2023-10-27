@@ -72,7 +72,7 @@ func basicAuth(token string) (*structs.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if user.ID == 0 {
+	if user.ID == utils.EmptyULID {
 		return nil, errors.New("user not found")
 	}
 

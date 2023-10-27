@@ -3,17 +3,20 @@ package models
 import (
 	"cloudgobrrr/filesystem"
 	"cloudgobrrr/utils"
+	"time"
 
+	"github.com/oklog/ulid/v2"
 	"github.com/rs/zerolog/log"
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	Username string `gorm:"unique"`
-	Email    string `gorm:"unique"`
-	Password string
-	IsAdmin  bool `gorm:"default:false"`
+	ID        ulid.ULID `gorm:"primarykey"`
+	Username  string    `gorm:"unique"`
+	Email     string    `gorm:"unique"`
+	Password  string
+	IsAdmin   bool `gorm:"default:false"`
+	CreatedAt int64
+	UpdatedAt int64
 }
 
 // UserCreate creates a user in the database
@@ -27,10 +30,13 @@ func UserCreate(username, email, plainTextPassword string, isAdmin bool) error {
 
 	// create user in database
 	tx := db.Create(&User{
-		Username: username,
-		Email:    email,
-		Password: hashedPassword,
-		IsAdmin:  isAdmin,
+		ID:        ulid.Make(),
+		Username:  username,
+		Email:     email,
+		Password:  hashedPassword,
+		IsAdmin:   isAdmin,
+		CreatedAt: time.Now().Unix(),
+		UpdatedAt: time.Now().Unix(),
 	})
 	if tx.Error != nil {
 		return tx.Error
@@ -77,7 +83,7 @@ func UserGetByEmail(email string) (*User, error) {
 }
 
 // UserGetById gets a user by their id
-func UserGetById(id uint) (*User, error) {
+func UserGetById(id ulid.ULID) (*User, error) {
 	var user User
 	tx := db.Where("id = ?", id).Find(&user)
 	if tx.Error != nil {

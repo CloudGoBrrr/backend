@@ -10,7 +10,7 @@ import (
 
 type Token struct {
 	ID          ulid.ULID `gorm:"primarykey"` // ToDo: replace with UUID
-	UserID      uint
+	UserID      ulid.ULID
 	Encoded     string `gorm:"primarykey"`
 	Description string
 	CreatedAt   int64
@@ -18,7 +18,7 @@ type Token struct {
 }
 
 // TokenCreate creates a token in the database
-func TokenCreate(userId uint, description string) (ulid.ULID, string, error) {
+func TokenCreate(userId ulid.ULID, description string) (ulid.ULID, string, error) {
 	amount := conf.GetInt("security.token.groups")
 	length := conf.GetInt("security.token.length")
 	var generatedPassword string
@@ -58,7 +58,7 @@ func TokenCreate(userId uint, description string) (ulid.ULID, string, error) {
 	return token.ID, generatedPassword, nil
 }
 
-func TokenGetAllByUserID(userId uint) ([]Token, error) {
+func TokenGetAllByUserID(userId ulid.ULID) ([]Token, error) {
 	var tokens []Token
 	tx := db.Where("user_id = ?", userId).Find(&tokens)
 	if tx.Error != nil {

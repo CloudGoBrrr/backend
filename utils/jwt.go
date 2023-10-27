@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/oklog/ulid/v2"
 )
 
 var secret []byte
@@ -13,7 +14,7 @@ var secret []byte
 var ErrInvalidSigningMethod = errors.New("invalid signing method")
 
 // GenerateJWT generates a JWT token and returns it
-func GenerateJWT(username string, userId uint, isAdmin bool) (string, error) {
+func GenerateJWT(username string, userId ulid.ULID, isAdmin bool) (string, error) {
 	var token *jwt.Token
 	if conf.GetString("jwt.signingMethod") == "HS256" {
 		token = jwt.New(jwt.SigningMethodHS256)
@@ -23,7 +24,7 @@ func GenerateJWT(username string, userId uint, isAdmin bool) (string, error) {
 
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = username
-	claims["userId"] = userId
+	claims["userId"] = userId.String()
 	claims["exp"] = time.Now().Add(time.Duration(conf.GetUint("jwt.expiration")) * time.Minute).Unix()
 	claims["isAdmin"] = isAdmin
 
@@ -41,7 +42,7 @@ func DecodeJWT(token string) (*structs.User, error) {
 
 	claims := t.Claims.(jwt.MapClaims)
 	username := claims["username"].(string)
-	userId := uint(claims["userId"].(float64))
+	userId := ulid.MustParse(claims["userId"].(string))
 	isAdmin := claims["isAdmin"].(bool)
 	exp := int64(claims["exp"].(float64))
 

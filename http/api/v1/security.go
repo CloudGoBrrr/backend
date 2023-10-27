@@ -77,7 +77,7 @@ func securityTokenCreate(c *fiber.Ctx) error {
 
 // securityTokenDelete handles the token deletion route
 func securityTokenDelete(c *fiber.Ctx) error {
-	// get id from params and convert to uint
+	// get id from params and convert to ulid.ULID
 	id, err := ulid.Parse(c.Params("identifier"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(utils.ConvertStringsToErrorResponse("invalid identifier"))
@@ -132,28 +132,30 @@ func securitySessionGetAll(c *fiber.Ctx) error {
 
 // securitySessionDelete handles the session deletion route
 func securitySessionDelete(c *fiber.Ctx) error {
-	// get id from params and convert to uint
+	// get id from params and convert to ulid.ULID
 	id, err := ulid.Parse(c.Params("identifier"))
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(utils.ConvertStringsToErrorResponse("invalid identifier"))
 	}
 
+	// note: we are always returning success here, even if the token does not exist
+
 	// get token by id
 	token, err := models.SessionGetByID(id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(utils.ConvertStringsToErrorResponse("invalid identifier"))
+		return c.JSON(response.Success{Success: true, Data: "token deleted"})
 	}
 
 	// compare token user id with user id from locals
 	user := c.Locals("user").(*structs.User)
 	if token.UserID != user.ID {
-		return c.Status(fiber.StatusUnauthorized).JSON(utils.ConvertStringsToErrorResponse("unauthorized"))
+		return c.JSON(response.Success{Success: true, Data: "token deleted"})
 	}
 
 	// delete token
 	err = models.SessionDeleteByID(id)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(utils.ConvertErrorsToErrorResponse(err))
+		return c.JSON(response.Success{Success: true, Data: "token deleted"})
 	}
 
 	return c.JSON(response.Success{Success: true, Data: "token deleted"})
