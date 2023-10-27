@@ -11,8 +11,6 @@ import (
 	"golang.org/x/crypto/argon2"
 )
 
-// ToDo: replace with argon2id
-
 type paramsStruct struct {
 	memory      uint32
 	iterations  uint32

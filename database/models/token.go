@@ -9,7 +9,7 @@ import (
 )
 
 type Token struct {
-	ID          ulid.ULID `gorm:"primarykey"` // ToDo: replace with UUID
+	ID          ulid.ULID `gorm:"primarykey"`
 	UserID      ulid.ULID
 	Encoded     string `gorm:"primarykey"`
 	Description string
